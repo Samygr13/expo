@@ -1,4 +1,53 @@
----
+---// EchoMe - MVP Frontend (React Native + Tailwind) import React from "react"; import { View, Text, TextInput, TouchableOpacity, FlatList } from "react-native"; import { Audio } from "expo-av"; import { useState } from "react";
+
+export default function EchoMeApp() { const [recording, setRecording] = useState(null); const [echoList, setEchoList] = useState([]);
+
+const startRecording = async () => { try { const { granted } = await Audio.requestPermissionsAsync(); if (!granted) return;
+
+await Audio.setAudioModeAsync({
+    allowsRecordingIOS: true,
+    playsInSilentModeIOS: true,
+  });
+
+  const { recording } = await Audio.Recording.createAsync(
+    Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+  );
+
+  setRecording(recording);
+} catch (err) {
+  console.error("Failed to start recording", err);
+}
+
+};
+
+const stopRecording = async () => { setRecording(undefined); await recording.stopAndUnloadAsync(); const uri = recording.getURI(); setEchoList([{ uri, id: Date.now().toString() }, ...echoList]); };
+
+return ( <View className="flex-1 bg-white p-4"> <Text className="text-2xl font-bold mb-4">🎙️ EchoMe</Text>
+
+<TouchableOpacity
+    onPress={recording ? stopRecording : startRecording}
+    className="bg-blue-600 px-4 py-2 rounded-full mb-6"
+  >
+    <Text className="text-white text-center">
+      {recording ? "🛑 Stop Recording" : "🎤 Start Echo"}
+    </Text>
+  </TouchableOpacity>
+
+  <FlatList
+    data={echoList}
+    keyExtractor={(item) => item.id}
+    renderItem={({ item }) => (
+      <View className="mb-4 p-3 bg-gray-100 rounded-lg">
+        <Text className="text-sm text-gray-600">🔊 Echo enregistré</Text>
+        <Text className="text-xs text-gray-500">URI: {item.uri}</Text>
+      </View>
+    )}
+  />
+</View>
+
+); }
+
+
 title: Configure a development build in cloud
 sidebar_title: Configure development build
 description: Learn how to configure a development build for a project using EAS Build.
